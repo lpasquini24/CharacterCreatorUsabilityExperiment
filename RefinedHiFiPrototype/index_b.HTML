@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Adept — Powers chooser (Variant B)</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Hide the buy/sell buttons at bottom of rules panel for Variant B */
+    body.variant-b #buyBtn, body.variant-b #sellBtn { display: none !important; }
+
+  </style>
+</head>
+<body class="variant-b">
+  <header class="topbar">
+    <button class="top-btn" id="quitBtn">Quit</button>
+
+    <div class="exp-wrap" aria-live="polite" >
+      <div class="exp-pill">
+        <div style="text-align: center; padding-bottom: 4px;">EXP <span id="expCount">20</span>/<span id="expMax">20</span></div>
+        <div class="progress-line"><div class="progress" id="expProgress" style="width:100%"></div></div>
+        </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="top-btn" id="finishBtn">Finish</button>
+    </div>
+  </header>
+  <div id="finishError" class="finish-error" role="alert" aria-live="assertive" hidden></div>
+
+  <!-- Modal: confirm closing a tradition tab (sells all owned powers in that tradition) -->
+  <div id="closeTabModal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true" hidden>
+    <div class="modal-dialog" role="document">
+      <div class="modal-body">
+        <h3 id="closeTabTitle">Close tradition</h3>
+        <p id="closeTabMsg">You are about to close this tradition and sell X powers for Y EXP.</p>
+      </div>
+      <div class="modal-actions">
+        <button id="closeTabCancel" class="modal-btn">Cancel</button>
+        <button id="closeTabConfirm" class="modal-btn confirm">Close and Sell</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="main">
+    <div class="tabs" role="tablist" aria-label="Traditions">
+      <div id="tabsContainer" class="tabs-list"></div>
+      <div class="tab-add">
+        <button id="addTabBtn" class="add-btn">＋</button>
+        <div id="addMenu" class="add-menu" hidden>
+          <ul id="addMenuList"></ul>
+        </div>
+      </div>
+    </div>
+
+    <section class="panel-frame" role="region" aria-label="Powers area">
+      <div class="panel-left">
+        <h2>Your Powers</h2>
+        <div class="list scroll" id="ownedList" tabindex="0"></div>
+      </div>
+
+      <div class="panel-middle">
+        <h2>Buy Powers</h2>
+        <div class="list scroll" id="buyList" tabindex="0"></div>
+      </div>
+
+      <div class="panel-right">
+        <header class="power-header">
+          <h2 id="powerTitle">Select a power</h2>
+        </header>
+        <div class="meta" id="powerMeta">
+          <p class="placeholder">Select a power from the lists to view its rules and buy it.</p>
+        </div>
+        <div class="power-rules scroll" id="powerRules">
+
+        </div>
+        <!-- buy/sell buttons intentionally omitted visually for Variant B (kept in DOM by script if needed) -->
+        <div class="power-actions">
+          <button id="buyBtn" class="buy-btn" hidden>BUY</button>
+          <button id="sellBtn" class="sell-btn" hidden>SELL</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <button id="settingsBtn" class="settings-btn">Settings</button>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

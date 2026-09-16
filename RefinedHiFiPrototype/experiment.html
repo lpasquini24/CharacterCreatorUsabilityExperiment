@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Choose Experiment</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main style="padding:24px;max-width:720px;margin:60px auto;font-family:inherit;text-align:center">
+    <h1>Select an experiment</h1>
+    <p>Choose which experimental workflow to run:</p>
+    <div style="display:flex;gap:18px;justify-content:center;margin-top:24px">
+      <div>
+        <h3>Experiment 1</h3>
+        <p>Buy two Tier 2 Powers from two different Traditions.</p>
+        <div style="margin-top:12px">
+          <button id="startExp1" class="top-btn">Start Experiment 1</button>
+        </div>
+      </div>
+      <div>
+        <h3>Experiment 2</h3>
+        <p>Tweak an existing character, taking as much time as you want.</p>
+        <div style="margin-top:12px">
+          <button id="startExp2" class="top-btn">Start Experiment 2</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Set experiment id and navigate to the appropriate start page.
+      document.getElementById('startExp1').addEventListener('click', function(){
+        try{ localStorage.setItem('prototype_experiment', '1'); }catch(e){}
+        window.location.href = 'start.html';
+      });
+      document.getElementById('startExp2').addEventListener('click', function(){
+        try{ localStorage.setItem('prototype_experiment', '2'); }catch(e){}
+        window.location.href = 'start2.html';
+      });
+    </script>
+  </main>
+</body>
+</html>

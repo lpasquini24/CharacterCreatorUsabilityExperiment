@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Start — Character Creator Task</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main style="padding:24px;max-width:900px;margin:40px auto;font-family:inherit">
+    <h1>Character Creator — Task</h1>
+    <p>This short task measures how quickly you can use the character creator. Please perform the following task when you press Start:</p>
+    <ol>
+      <li>Buy two Tier 2 Powers from two different Traditions.</li>
+    </ol>
+
+    <p>When you finish the task in the character creator, press the <strong>Finish</strong> button there to record your result and see accumulated metrics.</p>
+
+    <div style="margin-top:16px">
+      <div>
+        <label><input type="radio" name="variant" value="A" checked> Version A (current)</label>
+        <label style="margin-left:12px"><input type="radio" name="variant" value="B"> Version B (alternate)</label>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <button id="startBtn" class="top-btn">Start</button>
+    </div>
+  </main>
+
+  <script>
+    // When Start is pressed, create a run record, store chosen variant, and open the chosen index page.
+    function getSelectedVariant(){
+      const radios = document.getElementsByName('variant');
+      for(const r of radios) if(r.checked) return r.value;
+      return 'A';
+    }
+    document.getElementById('startBtn').addEventListener('click', function(){
+      const run = { startTime: Date.now(), bought: 0, sold: 0, tooltips: 0 };
+      try{
+        localStorage.setItem('prototype_run', JSON.stringify(run));
+        // Do not overwrite prototype_experiment if already set by experiment page; default to '1' if missing
+        const exp = localStorage.getItem('prototype_experiment') || '1';
+        localStorage.setItem('prototype_experiment', exp);
+        // store selected variant
+        const v = getSelectedVariant();
+        localStorage.setItem('prototype_variant', v);
+      }catch(e){}
+      try{
+        const v = localStorage.getItem('prototype_variant') || 'A';
+        if(v === 'B') window.location.href = 'index_b.HTML';
+        else window.location.href = 'index.HTML';
+      }catch(e){ window.location.href = 'index.HTML'; }
+    });
+  </script>
+</body>
+</html>
