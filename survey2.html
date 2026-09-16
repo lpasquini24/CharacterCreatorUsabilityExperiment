@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Survey — Experiment 2</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main style="max-width:860px;margin:32px auto;padding:18px;font-family:inherit">
+    <h1>Quick Survey (Experiment 2)</h1>
+    <p>Please rate the following on a scale from 1 (strongly disagree) to 6 (strongly agree).</p>
+    <form id="surveyForm">
+      <ol>
+        <li>
+          <label>“I am very familiar with Adept.”</label>
+          <div class="radios" data-q="q1"></div>
+        </li>
+        <li>
+          <label>“I felt slowed down / irritated by calculations”</label>
+          <div class="radios" data-q="q2"></div>
+        </li>
+        <li>
+          <label>“I felt slowed down / irritated by looking for rules”</label>
+          <div class="radios" data-q="q3"></div>
+        </li>
+        <li>
+          <label>“I felt slowed down / irritated while trying to tweak my Powers”</label>
+          <div class="radios" data-q="q4"></div>
+        </li>
+        <li>
+          <label>“I feel satisfied with my final character”</label>
+          <div class="radios" data-q="q5"></div>
+        </li>
+        <li>
+          <label>“I enjoyed the character creation process”</label>
+          <div class="radios" data-q="q6"></div>
+        </li>
+        <li>
+          <label>“Iterating/tweaking my character’s Powers was easy”</label>
+          <div class="radios" data-q="q7"></div>
+        </li>
+        <li>
+          <label>“I could easily find rules clarifications when I needed to”</label>
+          <div class="radios" data-q="q8"></div>
+        </li>
+        <li>
+          <label>“I could easily find how much EXP I had left when I needed to”</label>
+          <div class="radios" data-q="q9"></div>
+        </li>
+      </ol>
+
+      <div style="margin-top:18px;display:flex;gap:12px;align-items:center">
+        <button type="submit" id="submitSurvey" class="top-btn">Submit</button>
+        <div id="surveyError" style="color:#7a0b00;font-weight:700;display:none" role="alert"></div>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    // Build radio options 1..6 for each question container
+    document.querySelectorAll('.radios').forEach(container => {
+      const q = container.getAttribute('data-q');
+      for(let i=1;i<=6;i++){
+        const id = `${q}_${i}`;
+        const label = document.createElement('label');
+        label.style.marginRight = '8px';
+        const radio = document.createElement('input');
+        radio.type = 'radio'; radio.name = q; radio.value = String(i); radio.id = id;
+        label.appendChild(radio);
+        const txt = document.createTextNode(' ' + i);
+        label.appendChild(txt);
+        container.appendChild(label);
+      }
+    });
+
+    function appendSurveyCsv(vals){
+      let variant = 'A';
+      try{ variant = (localStorage.getItem('prototype_variant') || 'A').toUpperCase(); }catch(e){ variant='A'; }
+      const key = `prototype_survey_csv_exp2_v${variant}`;
+      const now = new Date().toISOString();
+      const header = 'q1,q2,q3,q4,q5,q6,q7,q8,q9,timestamp';
+      let csv = localStorage.getItem(key) || '';
+      if(!csv) csv = header + '\n';
+      csv += vals.join(',') + ',' + now + '\n';
+      localStorage.setItem(key, csv);
+    }
+
+    document.getElementById('surveyForm').addEventListener('submit', function(ev){
+      ev.preventDefault();
+      const vals = [];
+      for(let i=1;i<=9;i++){
+        const v = document.querySelector(`input[name=q${i}]:checked`);
+        if(!v){
+          document.getElementById('surveyError').textContent = 'Please answer all questions before submitting.';
+          document.getElementById('surveyError').style.display = 'block';
+          return;
+        }
+        vals.push(v.value);
+      }
+      // clear any error
+      document.getElementById('surveyError').style.display = 'none';
+      appendSurveyCsv(vals);
+      // navigate to experiment 2 end page
+      window.location.href = 'end2.html';
+    });
+  </script>
+</body>
+</html>

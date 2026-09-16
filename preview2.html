@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Preview — Character Sheet (Experiment 2)</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body{font-family:inherit;padding:18px}
+    .sheet-wrap{max-width:980px;margin:0 auto;background:white;border:1px solid #ccc;padding:18px}
+    .cols{display:flex;gap:12px}
+    .col{flex:1;border:1px solid #222;padding:8px}
+    .trad-title{font-weight:700;text-align:center;margin-bottom:8px}
+    .tier-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #eee}
+    .tier-num{width:30px;text-align:right;color:#444}
+    .tier-text{flex:1;min-height:18px}
+    @media print{ body *{visibility:hidden} .sheet-wrap, .sheet-wrap *{visibility:visible} .sheet-wrap{position:fixed;left:0;top:0;width:100%} .no-print{display:none} }
+  </style>
+</head>
+<body>
+  <main media = "print">
+    <h1>Character Sheet Preview — Experiment 2</h1>
+    <div style="margin:12px 0 18px">
+      <button id="backBtn" class="top-btn">Back</button>
+      <button id="downloadPdf" class="top-btn">Download PDF</button>
+      <button id="finishExp" class="top-btn">Finish Experiment</button>
+    </div>
+
+    <div id="sheetContainer" class="sheet-wrap" role="region" aria-label="Character sheet preview">
+      <div id="sheetContent">(loading preview...)</div>
+    </div>
+  </main>
+
+  <script>
+    function getSnapshot(){
+      try{
+        const variant = (localStorage.getItem('prototype_variant') || 'A').toUpperCase();
+        const exp = localStorage.getItem('prototype_experiment') || '1';
+        const key = `prototype_owned_snapshot_exp${exp}_v${variant}`;
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : null;
+      }catch(e){ return null; }
+    }
+    function gatherPowerIndex(){
+      try{ if(window.opener && window.opener.POWERS){ return window.opener.POWERS; } }catch(e){}
+      try{ if(window.POWERS){ return POWERS; } }catch(e){}
+      return window.POWERS || {};
+    }
+    function renderPreview(){
+      const snap = getSnapshot();
+      const powerIndex = gatherPowerIndex();
+      const columns = [];
+      const slots = 4;
+      const tradOrder = (snap && snap.openTabs && snap.openTabs.length>0) ? snap.openTabs.slice() : [];
+      tradOrder.sort((a,b) => { const oa = (snap.owned[a]||[]).length; const ob = (snap.owned[b]||[]).length; return ob - oa; });
+      for(const trad of tradOrder){
+        if(columns.length >= slots) break;
+        const ownedList = (snap.owned && snap.owned[trad]) ? snap.owned[trad].slice() : [];
+        columns.push({ tradition: trad, owned: ownedList });
+        const tierMap = {};
+        ownedList.forEach(o => { const t = (o && o.tier) ? Number(o.tier) : 0; tierMap[t] = (tierMap[t]||0) + 1; });
+        const needsSecond = Object.values(tierMap).some(c => c > 1);
+        if(needsSecond && columns.length < slots){
+          const firstCol = [];
+          const secondCol = [];
+          const seen = {};
+          for(const o of ownedList){
+            const t = (o && o.tier) ? Number(o.tier) : 0;
+            if(!seen[t]){ seen[t] = 1; firstCol.push(o); }
+            else { seen[t]++; secondCol.push(o); }
+          }
+          columns[columns.length-1].owned = firstCol;
+          columns.push({ tradition: trad, owned: secondCol });
+        }
+      }
+      while(columns.length < slots) columns.push({ tradition: '', owned: [] });
+      const sheet = document.createElement('div'); sheet.className = 'cols';
+      for(let c=0;c<columns.length;c++){
+        const col = columns[c];
+        const box = document.createElement('div'); box.className = 'col';
+        const title = document.createElement('div'); title.className = 'trad-title'; title.textContent = col.tradition || '(empty)';
+        box.appendChild(title);
+        const ownedQueue = (col.owned||[]).slice();
+        for(let tier=1;tier<=10;tier++){
+          const row = document.createElement('div'); row.className = 'tier-row';
+          const num = document.createElement('div'); num.className = 'tier-num'; num.textContent = tier;
+          const text = document.createElement('div'); text.className = 'tier-text';
+          let foundIndex = -1;
+          for(let i=0;i<ownedQueue.length;i++){
+            const o = ownedQueue[i];
+            const t = o && o.tier ? Number(o.tier) : 0;
+            if(t === tier){ foundIndex = i; break; }
+          }
+          if(foundIndex !== -1){ const o = ownedQueue.splice(foundIndex,1)[0]; text.textContent = o && o.name ? o.name : (o && o.id ? o.id : ''); } else { text.innerHTML = '&nbsp;'; }
+          row.appendChild(num); row.appendChild(text); box.appendChild(row);
+        }
+        sheet.appendChild(box);
+      }
+      const container = document.getElementById('sheetContent'); container.innerHTML = ''; container.appendChild(sheet);
+    }
+    document.getElementById('backBtn').addEventListener('click', () => {
+      try{
+        const variant = (localStorage.getItem('prototype_variant') || 'A').toUpperCase();
+        const exp = localStorage.getItem('prototype_experiment') || '1';
+        const key = `prototype_owned_snapshot_exp${exp}_v${variant}`;
+        const raw = localStorage.getItem(key);
+        if(raw){
+          // hand off the full snapshot to the main page restore key
+          localStorage.setItem('prototype_state_restore', raw);
+        }
+      }catch(e){}
+      const exp = localStorage.getItem('prototype_experiment') || '1';
+      if(exp === '2') window.location.href = 'index_b.HTML'; else window.location.href = 'index.HTML';
+    });
+    document.getElementById('finishExp').addEventListener('click', () => {
+      const exp = localStorage.getItem('prototype_experiment') || '1';
+      if(exp === '2') window.location.href = 'survey2.html'; else window.location.href = 'survey.html';
+    });
+    document.getElementById('downloadPdf').addEventListener('click', (e) => {
+      e.preventDefault();
+      // Wait for any images inside the sheet container to finish loading, then print this window.
+      try{
+        const container = document.getElementById('sheetContainer');
+        const imgs = Array.from(container.getElementsByTagName('img'));
+        const doPrint = () => { try{ window.focus(); window.print(); }catch(err){} };
+        if(imgs.length === 0){ // nothing to wait for
+          setTimeout(doPrint, 50);
+          return;
+        }
+        if(imgs.every(i => i.complete)) { setTimeout(doPrint, 50); return; }
+        let attempts = 0;
+        const iv = setInterval(()=>{
+          attempts++;
+          if(imgs.every(i => i.complete) || attempts > 40){ clearInterval(iv); doPrint(); }
+        }, 150);
+      }catch(e){ try{ window.print(); }catch(err){} }
+    });
+    document.addEventListener('DOMContentLoaded', renderPreview);
+  </script>
+</body>
+</html>
